@@ -1,0 +1,8 @@
+transformers==4.48.3
+torch==2.6.0
+langchain==0.3.26
+langchain-community==0.3.26
+sentence-transformers==4.1.0
+accelerate==1.8.1
+einops==0.8.1
+chromadb==0.6.3
