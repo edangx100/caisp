@@ -1,0 +1,7 @@
+# uv virtual environment (large - contains torch/tensorflow)
+.venv/
+__pycache__/
+
+# TextAttack run outputs
+attack_results_*.csv
+checkpoints/

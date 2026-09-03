@@ -1,3 +1,16 @@
-transformers==4.30.0
-numpy==1.26.2
-scipy==1.10.1
+# Original sentiment analyser
+transformers
+numpy
+scipy
+torch
+
+# Adversarial attack tooling
+textattack
+
+# Needed by TextFooler's Universal Sentence Encoder constraint
+tensorflow
+tensorflow_hub
+tensorflow_text
+
+# gdown (pulled in by flair, a textattack dependency) still uses pkg_resources
+setuptools<81
