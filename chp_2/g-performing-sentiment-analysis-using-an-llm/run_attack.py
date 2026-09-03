@@ -46,7 +46,7 @@ from textattack.attack_results import SuccessfulAttackResult, SkippedAttackResul
 from textattack.attack_recipes import TextFoolerJin2019
 
 from textattack_wrapper import SentimentWrapper
-from simple_sentiment_analyser_copy import predict_label, labels
+from simple_sentiment_analyser_copy import predict_sentiment, labels
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +181,7 @@ for i, result in enumerate(results, 1):
     print("-" * 80)
 
     original_text = result.original_result.attacked_text.text
-    original = predict_label(original_text)
+    original = predict_sentiment(original_text)
 
     print(f"Original text     : {original_text}")
     print(f"Original sentiment: {original['label']} (confidence: {original['confidence']:.4f})")
@@ -195,7 +195,7 @@ for i, result in enumerate(results, 1):
 
     if isinstance(result, SuccessfulAttackResult):
         perturbed_text = result.perturbed_result.attacked_text.text
-        perturbed = predict_label(perturbed_text)
+        perturbed = predict_sentiment(perturbed_text)
 
         print(f"\nPerturbed text     : {perturbed_text}")
         print(f"Perturbed sentiment: {perturbed['label']} (confidence: {perturbed['confidence']:.4f})")

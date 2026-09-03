@@ -138,10 +138,16 @@ def analyze_sentiment(text):
 
 
 # ---------------------------------------------------------------------------
-# NEW: a small helper that answers "what does the model think of this text?"
-# in one line. Used by run_attack.py to double-check TextAttack's own verdict.
+# NEW: scores ONE piece of text and answers "what does the model think?".
+#
+# This deliberately has the same name and returns the same shape of dictionary
+# as predict_sentiment() in the chapter 1 example
+# (chp_2/1-attacking_llm_model_using_textattack/sentiment_classifier.py), so
+# that the TextAttack wrapper in both chapters can be read side by side. The
+# only difference is that this one reports three classes instead of two,
+# because this model has a "neutral" class in the middle.
 # ---------------------------------------------------------------------------
-def predict_label(text):
+def predict_sentiment(text):
     probs = get_class_probabilities([text])[0]   # one text in, one row out
     winner = int(np.argmax(probs))               # index of the highest score
     return {
