@@ -3,5 +3,5 @@
 __pycache__/
 
 # TextAttack run outputs
-attack_results_*.csv
+attack_results*.csv
 checkpoints/

@@ -17,12 +17,11 @@ VIRTUAL_ENV=.venv uv pip install --overrides overrides.txt -r requirements.txt
 
 # 3. Run
 .venv/bin/python simple_sentiment_analyser_copy.py     # interactive analyser
-.venv/bin/python run_attack.py                         # attack, textfooler
-.venv/bin/python run_attack.py pwws                    # attack, WordNet synonyms
-.venv/bin/python run_attack.py deepwordbug             # attack, character typos
+.venv/bin/python run_attack.py                         # TextFooler attack
 ```
 
 `run_attack.py` downloads the NLTK language data it needs on first run
-(`averaged_perceptron_tagger_eng`, `wordnet`, `stopwords`, ...). The
-`textfooler` recipe additionally downloads the counter-fitted word embeddings
-and the Universal Sentence Encoder the first time it runs, which takes a while.
+(`averaged_perceptron_tagger_eng`, `wordnet`, `stopwords`, ...). TextFooler
+additionally downloads the counter-fitted word embeddings (~480MB) and the
+Universal Sentence Encoder the first time it runs, which takes a while. Both
+are cached, so later runs start straight into the attack.

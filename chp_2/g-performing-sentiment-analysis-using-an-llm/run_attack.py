@@ -20,24 +20,30 @@
 #   4. Constraints     - rules that keep the new sentence a fair example
 #                        (still means the same, same part of speech, etc).
 #
+# THE RECIPE USED HERE: TextFoolerJin2019
+# ---------------------------------------
+#   Goal function  - untargeted misclassification: any wrong answer wins.
+#   Search method  - greedy word importance ranking. It first deletes each
+#                    word in turn to see which ones the model leans on most,
+#                    then attacks those words first.
+#   Transformation - swap a word for a near neighbour in a counter-fitted
+#                    word embedding space (a space built so that synonyms sit
+#                    close together and antonyms do not).
+#   Constraints    - the replacement must keep the same part of speech, and
+#                    the whole sentence must stay close in meaning as judged
+#                    by the Universal Sentence Encoder. These are what stop
+#                    the attack from simply rewriting the sentence.
+#
 # USAGE
-#   python run_attack.py                # default recipe: textfooler
-#   python run_attack.py pwws           # a lighter, WordNet-based recipe
-#   python run_attack.py deepwordbug    # character-level typo attack
+#   python run_attack.py
 # ============================================================================
-
-import sys
 
 import nltk
 
 from textattack import Attacker, AttackArgs
 from textattack.datasets import Dataset
 from textattack.attack_results import SuccessfulAttackResult, SkippedAttackResult
-from textattack.attack_recipes import (
-    TextFoolerJin2019,      # word swaps using counter-fitted embeddings
-    PWWSRen2019,            # word swaps using WordNet synonyms
-    DeepWordBugGao2018,     # character-level edits (typos)
-)
+from textattack.attack_recipes import TextFoolerJin2019
 
 from textattack_wrapper import SentimentWrapper
 from simple_sentiment_analyser_copy import predict_label, labels
@@ -118,32 +124,17 @@ dataset = Dataset(examples, label_names=labels)
 
 
 # ---------------------------------------------------------------------------
-# STEP 3 - Pick the attack recipe.
+# STEP 3 - Build the attack.
 #
-# textfooler  : swaps words for close neighbours in a special word-embedding
-#               space, and uses a sentence encoder to check the meaning did
-#               not drift. Strong, but downloads a large model on first run.
-# pwws        : swaps words for WordNet synonyms, ordered by how much each
-#               word matters. Lighter, no big downloads beyond NLTK data.
-# deepwordbug : introduces small character-level typos ("terrible" ->
-#               "terrble"). Shows that even broken spelling can fool a model.
-# ---------------------------------------------------------------------------
-RECIPES = {
-    "textfooler": TextFoolerJin2019,
-    "pwws": PWWSRen2019,
-    "deepwordbug": DeepWordBugGao2018,
-}
-
-# Read the recipe name from the command line, defaulting to textfooler.
-recipe_name = sys.argv[1].lower() if len(sys.argv) > 1 else "textfooler"
-if recipe_name not in RECIPES:
-    print(f"Unknown recipe '{recipe_name}'. Choose one of: {', '.join(RECIPES)}")
-    sys.exit(1)
-
-print(f"Creating attack using recipe: {recipe_name}")
 # .build() takes our wrapper and assembles the goal function, search method,
 # transformation and constraints described at the top of this file.
-attack = RECIPES[recipe_name].build(model_wrapper)
+#
+# First run only: this downloads the counter-fitted word embeddings (~480MB)
+# and the Universal Sentence Encoder. Both are cached, so later runs skip
+# straight to the attack.
+# ---------------------------------------------------------------------------
+print("Creating TextFooler attack...")
+attack = TextFoolerJin2019.build(model_wrapper)
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +143,7 @@ attack = RECIPES[recipe_name].build(model_wrapper)
 print("Setting up attack arguments...")
 attack_args = AttackArgs(
     num_examples=len(examples),                       # attack every sentence
-    log_to_csv=f"attack_results_{recipe_name}.csv",   # full log for later review
+    log_to_csv="attack_results.csv",                  # full log for later review
     checkpoint_interval=5,                            # save progress every 5
     disable_stdout=False,                             # show each result live
     random_seed=42,                                   # reproducible runs
@@ -245,7 +236,7 @@ attacked = successful + failed   # sentences the attack actually got to try
 print("\n" + "=" * 80)
 print("FINAL SCORE")
 print("=" * 80)
-print(f"Recipe used            : {recipe_name}")
+print("Recipe used            : TextFoolerJin2019")
 print(f"Sentences in dataset   : {len(results)}")
 print(f"Skipped (already wrong): {skipped}")
 print(f"Attacked               : {attacked}")
@@ -260,4 +251,4 @@ if successful:
     print(f"Average words changed  : {total_words_changed / successful:.2f}")
     print(f"Average perturbation   : {total_words_changed / total_words:.2%} of each sentence")
 
-print(f"\nFull log saved to: attack_results_{recipe_name}.csv")
+print("\nFull log saved to: attack_results.csv")
